@@ -18,7 +18,7 @@ instance LambdaCalculus Term where
   application f x = Application f x
 
 
--- SKI combinators represented by our calc lambda
+-- SKI combinators
 iCombinator :: Term
 iCombinator = abstraction "x" id
 
@@ -34,24 +34,46 @@ sCombinator = abstraction "x" $ \x ->
               application (application x z) (application y z)
 
 
+-- js
+termToJString :: Term -> String
+termToJString (Var name) = name
+
+termToJString (Abstraction name body) =
+  let
+    jsBody = termToJString body
+  in
+    "(" ++ name ++ ") => { return " ++ jsBody ++ "; }"
+
+termToJString (Application f x) =
+  let
+    fBody = termToJString f
+    xBody = termToJString x
+  in
+    "(" ++ fBody ++ ")(" ++ xBody ++ ")"
+
+
 -- util
-prettyPrint :: Term -> String
-prettyPrint (Var x) = x
-prettyPrint (Abstraction x body) = "λ" ++ x ++ ".(" ++ prettyPrint body ++ ")"
-prettyPrint (Application f x) = "(" ++ prettyPrint f ++ " " ++ prettyPrint x ++ ")"
+prettify :: Term -> String
+prettify (Var x) = x
+prettify (Abstraction x body) = "λ" ++ x ++ ".(" ++ prettify body ++ ")"
+prettify (Application f x) = "(" ++ prettify f ++ " " ++ prettify x ++ ")"
 
 
 main :: IO ()
 main = do
   putStrLn "I Combinator:"
   print iCombinator
-  putStrLn $ "Pretty: " ++ prettyPrint iCombinator
+  putStrLn $ "prettified code: " ++ prettify iCombinator
+  putStrLn $ "JS code: const iComb = " ++ termToJString iCombinator
 
   putStrLn "\nK Combinator:"
   print kCombinator
-  putStrLn $ "Pretty: " ++ prettyPrint kCombinator
+  putStrLn $ "prettified code: " ++ prettify kCombinator
+  putStrLn $ "JS code: const kComb = " ++ termToJString  kCombinator
 
   putStrLn "\nS Combinator:"
   print sCombinator
-  putStrLn $ "Pretty: " ++ prettyPrint sCombinator
+  putStrLn $ "prettified code: " ++ prettify sCombinator
+  putStrLn $ "JS code: const sComb = " ++ termToJString sCombinator
 
+  return ()
